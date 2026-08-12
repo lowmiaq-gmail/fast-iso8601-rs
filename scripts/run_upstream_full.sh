@@ -8,8 +8,12 @@ if command -v cygpath >/dev/null 2>&1; then
     python_bin=$(cygpath -u "$python_bin")
 fi
 test_file="$repo_root/upstream/iso8601/test_iso8601.py"
+test_file_python="$test_file"
+if command -v cygpath >/dev/null 2>&1; then
+    test_file_python=$(cygpath -w "$test_file")
+fi
 
-actual_hash=$("$python_bin" -c 'import hashlib,sys; print(hashlib.sha256(open(sys.argv[1], "rb").read()).hexdigest())' "$test_file")
+actual_hash=$("$python_bin" -c 'import hashlib,sys; print(hashlib.sha256(open(sys.argv[1], "rb").read()).hexdigest())' "$test_file_python")
 test "$actual_hash" = "c66876357326d5c5ed52d7059055c41c4d89db791645d1fad05b7f5d3f9732ee"
 
 candidate_package=$(
@@ -45,12 +49,16 @@ test -d "$candidate_package_shell"
 # resolves the relative import against the wheel under test. The copy is a
 # transient test fixture and is always removed.
 installed_test="$candidate_package_shell/_fast_iso8601_upstream_test.py"
+installed_test_python="$installed_test"
+if command -v cygpath >/dev/null 2>&1; then
+    installed_test_python=$(cygpath -w "$installed_test")
+fi
 test ! -e "$installed_test"
 cp "$test_file" "$installed_test"
 cleanup() { rm -f "$installed_test"; }
 trap cleanup EXIT HUP INT TERM
 
-installed_hash=$("$python_bin" -c 'import hashlib,sys; print(hashlib.sha256(open(sys.argv[1], "rb").read()).hexdigest())' "$installed_test")
+installed_hash=$("$python_bin" -c 'import hashlib,sys; print(hashlib.sha256(open(sys.argv[1], "rb").read()).hexdigest())' "$installed_test_python")
 test "$installed_hash" = "$actual_hash"
 
 CANDIDATE_PACKAGE="$candidate_package" "$python_bin" - <<'PY'
@@ -69,4 +77,4 @@ print("upstream test binding:", actual)
 PY
 
 cd "$(dirname "$candidate_package_shell")"
-"$python_bin" -m pytest --import-mode=importlib -q "$installed_test"
+"$python_bin" -m pytest --import-mode=importlib -q "$installed_test_python"
