@@ -4,6 +4,9 @@ set -euo pipefail
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 python_bin=${PYTHON:-python3}
 python_bin=$($python_bin -c 'import sys; print(sys.executable)')
+if command -v cygpath >/dev/null 2>&1; then
+    python_bin=$(cygpath -u "$python_bin")
+fi
 test_file="$repo_root/upstream/iso8601/test_iso8601.py"
 
 actual_hash=$("$python_bin" -c 'import hashlib,sys; print(hashlib.sha256(open(sys.argv[1], "rb").read()).hexdigest())' "$test_file")
