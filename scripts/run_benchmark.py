@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import argparse
 import hashlib
-import importlib.metadata
 import importlib.util
 import json
 import math
@@ -10,6 +9,11 @@ import platform
 import statistics
 import sys
 import time
+
+try:
+    from importlib import metadata as importlib_metadata
+except ImportError:  # Python 3.7
+    import importlib_metadata
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -62,7 +66,7 @@ def main():
     artifact = args.artifact.resolve()
     native = importlib.util.find_spec("iso8601._native")
     assert native and native.origin and native.origin.endswith((".so", ".pyd"))
-    assert importlib.metadata.version("fast-iso8601-rs") == "0.1.0"
+    assert importlib_metadata.version("fast-iso8601-rs") == "0.1.0"
     oracle = load_oracle()
     workloads = {
         "parse_utc": ("2026-08-12T10:30:45Z", oracle.parse_date, candidate.parse_date),
@@ -142,4 +146,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
