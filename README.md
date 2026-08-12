@@ -17,7 +17,7 @@ assert iso8601.is_iso8601("2026-08")
 
 ## Install
 
-The project is not published from this repository yet. After a release:
+Install the verified release from public PyPI:
 
 ```console
 python -m pip install fast-iso8601-rs
@@ -25,6 +25,8 @@ python -m pip install fast-iso8601-rs
 
 Existing code continues to use `import iso8601`. Python 3.8+ selects a native
 wheel on supported platforms. Python 3.7 selects the `py3-none-any` fallback.
+See the [public PyPI project](https://pypi.org/project/fast-iso8601-rs/) and
+[formal GitHub Release](https://github.com/lowmiaq-gmail/fast-iso8601-rs/releases/tag/v0.1.0).
 
 ## Compatibility and verification
 
@@ -49,4 +51,3 @@ is claimed before that gate passes.
 
 MIT. The frozen upstream notice and Rust dependency notices are retained in
 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
-

@@ -21,3 +21,9 @@ Do not publish a numeric speed claim until an exact release wheel has raw-sample
 median and p95 evidence. Do not claim compatibility with versions after 2.1.0 or
 platforms whose packaged-wheel CI has not passed.
 
+## Verified owned surfaces
+
+- Public PyPI: https://pypi.org/project/fast-iso8601-rs/
+- Public repository: https://github.com/lowmiaq-gmail/fast-iso8601-rs
+- Formal release: https://github.com/lowmiaq-gmail/fast-iso8601-rs/releases/tag/v0.1.0
+- GitHub description and topics expose the frozen upstream version, ISO 8601 parser intent, Rust/PyO3 packaging, Python fallback, timezone semantics, and performance evidence without guaranteeing ranking, traffic, or future-version compatibility.
