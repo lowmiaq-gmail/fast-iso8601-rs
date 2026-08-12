@@ -30,14 +30,18 @@ PY
 
 printf '%s\n' "$candidate_package" | sed -n '1p'
 candidate_package=$(printf '%s\n' "$candidate_package" | tail -n 1)
-test -d "$candidate_package"
+candidate_package_shell="$candidate_package"
+if command -v cygpath >/dev/null 2>&1; then
+    candidate_package_shell=$(cygpath -u "$candidate_package")
+fi
+test -d "$candidate_package_shell"
 
 # The frozen test uses `from . import iso8601`. Running it in the frozen
 # package would silently bind that relative import to the oracle itself. Copy
 # the exact, hash-checked test bytes next to the installed candidate so pytest
 # resolves the relative import against the wheel under test. The copy is a
 # transient test fixture and is always removed.
-installed_test="$candidate_package/_fast_iso8601_upstream_test.py"
+installed_test="$candidate_package_shell/_fast_iso8601_upstream_test.py"
 test ! -e "$installed_test"
 cp "$test_file" "$installed_test"
 cleanup() { rm -f "$installed_test"; }
@@ -61,5 +65,5 @@ if bound is not importlib.import_module("iso8601.iso8601"):
 print("upstream test binding:", actual)
 PY
 
-cd "$(dirname "$candidate_package")"
+cd "$(dirname "$candidate_package_shell")"
 "$python_bin" -m pytest --import-mode=importlib -q "$installed_test"
