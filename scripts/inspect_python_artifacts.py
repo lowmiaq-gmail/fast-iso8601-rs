@@ -45,7 +45,7 @@ def metadata_contract(raw):
         metadata["Version"],
         str(SpecifierSet(metadata["Requires-Python"])),
         metadata["Summary"],
-        metadata.get_payload().rstrip("\n"),
+        metadata.get_payload().replace("\r\n", "\n").rstrip("\n"),
     )
 
 
