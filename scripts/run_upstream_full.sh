@@ -6,7 +6,7 @@ python_bin=${PYTHON:-python3}
 python_bin=$($python_bin -c 'import sys; print(sys.executable)')
 test_file="$repo_root/upstream/iso8601/test_iso8601.py"
 
-actual_hash=$(shasum -a 256 "$test_file" | awk '{print $1}')
+actual_hash=$("$python_bin" -c 'import hashlib,sys; print(hashlib.sha256(open(sys.argv[1], "rb").read()).hexdigest())' "$test_file")
 test "$actual_hash" = "c66876357326d5c5ed52d7059055c41c4d89db791645d1fad05b7f5d3f9732ee"
 
 candidate_package=$(
@@ -43,7 +43,7 @@ cp "$test_file" "$installed_test"
 cleanup() { rm -f "$installed_test"; }
 trap cleanup EXIT HUP INT TERM
 
-installed_hash=$(shasum -a 256 "$installed_test" | awk '{print $1}')
+installed_hash=$("$python_bin" -c 'import hashlib,sys; print(hashlib.sha256(open(sys.argv[1], "rb").read()).hexdigest())' "$installed_test")
 test "$installed_hash" = "$actual_hash"
 
 CANDIDATE_PACKAGE="$candidate_package" "$python_bin" - <<'PY'
