@@ -1,0 +1,65 @@
+[build-system]
+requires = ["maturin>=1.9,<2"]
+build-backend = "maturin"
+
+[project]
+name = "fast-iso8601-rs"
+version = "0.1.0"
+description = "Fast Rust-backed drop-in replacement for iso8601 2.1.0"
+readme = "README.md"
+requires-python = ">=3.7,<4"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "fast-iso8601-rs contributors" }]
+dependencies = []
+keywords = ["iso8601", "datetime", "parser", "pyo3", "rust", "drop-in-replacement"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.7",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Programming Language :: Rust",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+[project.urls]
+Homepage = "https://github.com/lowmiaq-gmail/fast-iso8601-rs"
+Repository = "https://github.com/lowmiaq-gmail/fast-iso8601-rs"
+Issues = "https://github.com/lowmiaq-gmail/fast-iso8601-rs/issues"
+Changelog = "https://github.com/lowmiaq-gmail/fast-iso8601-rs/blob/main/CHANGELOG.md"
+
+[project.optional-dependencies]
+test = ["pytest>=7", "hypothesis", "pytz"]
+release = ["build", "twine", "packaging"]
+
+[tool.maturin]
+bindings = "pyo3"
+module-name = "iso8601._native"
+python-source = "python"
+features = ["pyo3/extension-module"]
+exclude = [
+  ".oracle-venv/**",
+  ".venv/**",
+  "**/__pycache__/**",
+  "dist/**",
+  "fallback/build/**",
+  "fallback/*.egg-info/**",
+  "target/**",
+]
+include = [
+  { path = "fallback/iso8601/**", format = "sdist" },
+  { path = "tests/**", format = "sdist" },
+]
+
+[tool.maturin.sbom]
+rust = false
+
+[tool.pytest.ini_options]
+addopts = "-ra"
+testpaths = ["tests"]

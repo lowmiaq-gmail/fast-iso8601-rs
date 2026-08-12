@@ -1,0 +1,97 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  native:
+    name: Packaged native / ${{ matrix.label }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {label: linux-x86_64, os: ubuntu-22.04}
+          - {label: macos-arm64, os: macos-15}
+          - {label: windows-x86_64, os: windows-2022}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+          components: rustfmt, clippy
+      - name: Install tools
+        run: python -m pip install --upgrade pip "maturin==1.14.1" "pytest>=8,<10" hypothesis pytz
+      - name: Rust gates
+        run: |
+          cargo fmt --all -- --check
+          cargo clippy --all-targets --all-features -- -D warnings
+          cargo test --all-targets
+      - name: Build and install exact native wheel
+        run: |
+          maturin build --release --locked --out dist
+          python -c "import glob,subprocess,sys; wheels=glob.glob('dist/*.whl'); assert len(wheels)==1,wheels; subprocess.check_call([sys.executable,'-m','pip','install','--force-reinstall','--no-deps',wheels[0]])"
+      - name: Candidate and complete frozen upstream suites
+        shell: bash
+        run: |
+          python -m pytest -q tests
+          candidate_root=$(python -c 'import site; print(site.getsitepackages()[0])')
+          CANDIDATE_EXPECTED_ROOT="$candidate_root" CANDIDATE_REQUIRE_NATIVE=1 PYTHON=python bash scripts/run_upstream_full.sh
+      - name: Isolated 10,000-case differential
+        shell: bash
+        run: |
+          python -m venv oracle-venv
+          oracle_python=oracle-venv/bin/python
+          if [ ! -x "$oracle_python" ]; then oracle_python=oracle-venv/Scripts/python; fi
+          python scripts/run_differential.py --oracle-python "$oracle_python" --candidate-python "$(python -c 'import sys; print(sys.executable)')" --cases 10000
+
+  fallback-wheel:
+    name: Canonical universal fallback
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - run: python -m pip install "setuptools>=77" wheel build
+      - run: python scripts/build_fallback_wheel.py --out-dir dist
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ci-universal-fallback-wheel
+          path: dist/*-py3-none-any.whl
+          if-no-files-found: error
+
+  fallback-python37:
+    name: Packaged fallback / Python 3.7
+    needs: fallback-wheel
+    runs-on: ubuntu-22.04
+    container: python:3.7.17-buster
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: ci-universal-fallback-wheel
+          path: dist
+      - name: Install exact fallback wheel
+        run: |
+          python -m pip install "pip<24" "pytest==7.4.4" "hypothesis==6.79.4" pytz
+          python -m pip install --force-reinstall --no-deps dist/*-py3-none-any.whl
+      - name: Candidate and complete frozen upstream suites
+        shell: bash
+        run: |
+          EXPECT_NATIVE=0 python -m pytest -q tests
+          candidate_root=$(python -c 'import site; print(site.getsitepackages()[0])')
+          CANDIDATE_EXPECTED_ROOT="$candidate_root" PYTHON=python bash scripts/run_upstream_full.sh
+      - name: Isolated 10,000-case differential
+        shell: bash
+        run: |
+          python -m venv oracle-venv
+          python scripts/run_differential.py --oracle-python oracle-venv/bin/python --candidate-python "$(python -c 'import sys; print(sys.executable)')" --cases 10000
+

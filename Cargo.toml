@@ -1,0 +1,25 @@
+[package]
+name = "fast-iso8601-rs"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.74"
+license = "MIT"
+description = "Rust-backed drop-in replacement for iso8601 2.1.0"
+repository = "https://github.com/lowmiaq-gmail/fast-iso8601-rs"
+homepage = "https://github.com/lowmiaq-gmail/fast-iso8601-rs"
+keywords = ["iso8601", "datetime", "parser", "python", "pyo3"]
+categories = ["date-and-time", "parser-implementations"]
+
+[lib]
+name = "_native"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+pyo3 = { version = "0.24", features = ["extension-module", "abi3-py38"] }
+regex = "1.11"
+
+[profile.release]
+codegen-units = 1
+lto = "thin"
+strip = true
+

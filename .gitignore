@@ -1,0 +1,10 @@
+/.benchmarks/
+/.pytest_cache/
+/.oracle-venv/
+/.venv/
+/dist/
+/target/
+**/__pycache__/
+*.egg-info/
+*.pyd
+*.so
